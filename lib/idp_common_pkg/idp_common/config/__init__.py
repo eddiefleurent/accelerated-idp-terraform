@@ -5,44 +5,62 @@ import boto3
 import os
 from typing import Dict, Any, Optional
 from botocore.exceptions import ClientError
+from boto3.dynamodb.types import TypeDeserializer
 import logging
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
 class ConfigurationReader:
-    def __init__(self, table_name=None):
+    def __init__(self, table_name=None, region_name=None):
         """
         Initialize the configuration reader using the table name from environment variable or parameter
-        
+
         Args:
             table_name: Optional override for configuration table name
+            region_name: Optional AWS region override (defaults to AWS_REGION env var)
         """
-        table_name = table_name or os.environ.get('CONFIGURATION_TABLE_NAME')
-        if not table_name:
+        self.table_name = table_name or os.environ.get('CONFIGURATION_TABLE_NAME')
+        if not self.table_name:
             raise ValueError("Configuration table name not provided. Either set CONFIGURATION_TABLE_NAME environment variable or provide table_name parameter.")
-            
-        self.dynamodb = boto3.resource('dynamodb')
-        self.table = self.dynamodb.Table(table_name)
-        logger.info(f"Initialized ConfigurationReader with table: {table_name}")
+
+        # Get region from parameter, environment variable, or boto3 session default
+        region = region_name or os.environ.get('AWS_REGION', os.environ.get('AWS_DEFAULT_REGION'))
+
+        # Use boto3 client for more reliable DynamoDB access
+        if region:
+            self.client = boto3.client('dynamodb', region_name=region)
+            logger.info(f"Initialized ConfigurationReader with table: {self.table_name} in region: {region}")
+        else:
+            self.client = boto3.client('dynamodb')
+            logger.info(f"Initialized ConfigurationReader with table: {self.table_name} (using default region)")
+
+        self.deserializer = TypeDeserializer()
+
+    def _deserialize_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
+        """Deserialize DynamoDB item from wire format to Python dict"""
+        return {k: self.deserializer.deserialize(v) for k, v in item.items()}
 
     def get_configuration(self, config_type: str) -> Optional[Dict[str, Any]]:
         """
         Retrieve a configuration item from DynamoDB
-        
+
         Args:
             config_type: The configuration type to retrieve ('Default' or 'Custom')
-            
+
         Returns:
             Configuration dictionary if found, None otherwise
         """
         try:
-            response = self.table.get_item(
+            response = self.client.get_item(
+                TableName=self.table_name,
                 Key={
-                    'Configuration': config_type
+                    'Configuration': {'S': config_type}
                 }
             )
-            return response.get('Item')
+            if 'Item' in response:
+                return self._deserialize_item(response['Item'])
+            return None
         except ClientError as e:
             logger.error(f"Error retrieving configuration {config_type}: {str(e)}")
             raise
@@ -105,15 +123,16 @@ class ConfigurationReader:
             logger.error(f"Error getting merged configuration: {str(e)}")
             raise
 
-def get_config(table_name=None) -> Dict[str, Any]:
+def get_config(table_name=None, region_name=None) -> Dict[str, Any]:
     """
     Get the merged configuration using the environment variable for table name
-    
+
     Args:
         table_name: Optional override for configuration table name
-        
+        region_name: Optional AWS region override (defaults to AWS_REGION env var)
+
     Returns:
         Merged configuration dictionary
     """
-    reader = ConfigurationReader(table_name)
+    reader = ConfigurationReader(table_name, region_name)
     return reader.get_merged_configuration()

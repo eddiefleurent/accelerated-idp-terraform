@@ -487,3 +487,68 @@ python ./scripts/simulate_load.py -s source_bucket -k prefix/exampledoc.pdf -d i
 ```
 
 This simulates incoming documents based on minute-by-minute rates in the schedule CSV file.
+
+---
+
+## Option 3: Terraform Deployment
+
+For Terraform-based infrastructure deployments:
+
+### Quick Start
+
+```bash
+# Navigate to terraform directory
+cd terraform
+
+# Deploy infrastructure
+./deploy.sh
+```
+
+### Post-Deployment Configuration
+
+After infrastructure deployment, load configuration into DynamoDB:
+
+```bash
+cd terraform/testing
+
+# Load default configuration
+python3 load_config.py \
+  --config-file ../../config_library/pattern-2/lending-package-sample/config.yaml \
+  --table-name $(cd .. && terraform output -raw configuration_table_name) \
+  --region us-west-2
+```
+
+### Testing
+
+```bash
+# Run end-to-end test
+cd terraform/testing
+./test-idp.sh pattern2
+```
+
+### Documentation
+
+Terraform deployment currently supports **Pattern 2 (Textract + Bedrock)** with full end-to-end testing:
+
+- **Complete Guide**: [terraform/README.md](../terraform/README.md)
+- **Current Status**: [terraform/STATUS.md](../terraform/STATUS.md)
+- **Testing Guide**: [terraform/testing/README.md](../terraform/testing/README.md)
+- **Future Roadmap**: [terraform/TASKS.md](../terraform/TASKS.md)
+
+### What's Included
+
+- Pattern 2 workflow (OCR → Classification → Extraction)
+- Main stack infrastructure (queues, configuration, Glue)
+- 170 Terraform resources
+- CloudWatch monitoring and dashboards
+- End-to-end testing scripts
+
+### What's Not Included (Future Work)
+
+- Web UI components
+- Cognito authentication
+- AppSync GraphQL API
+- CloudFront distribution
+- Pattern 1 and Pattern 3
+
+See [terraform/TASKS.md](../terraform/TASKS.md) for the full conversion roadmap.

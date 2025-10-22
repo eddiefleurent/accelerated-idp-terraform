@@ -23,3 +23,28 @@ notebooks/examples/data
 .idea/
 .dsr/
 *tmp-dev-assets*
+# Terraform logs and state files
+terraform/terraform_apply*.log
+terraform/terraform_destroy*.log
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/.terraform.tfstate.lock.info
+
+# Lambda package directories
+**/lambda/**/package/
+
+# Terraform variable files (may contain sensitive data)
+terraform/*.tfvars
+terraform/*.auto.tfvars
+!terraform/terraform.tfvars.example
+
+# Lambda build artifacts
+terraform/lambda_packages/*.zip
+terraform/lambda_builds/
+
+# Testing artifacts
+terraform/testing/*.json
+terraform/testing/*.log
+!terraform/testing/README.md
