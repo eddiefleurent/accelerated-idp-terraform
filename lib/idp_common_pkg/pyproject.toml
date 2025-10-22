@@ -64,6 +64,7 @@ classification = [
 # Extraction module dependencies
 extraction = [
   "Pillow==11.2.1", # For image handling
+  "pydantic>=2.0.0", # For schema validation
 ]
 
 # Assessment module dependencies

@@ -34,7 +34,7 @@ LAMBDA_FUNCTIONS["ocr_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/ocr_fun
 LAMBDA_FUNCTIONS["classification_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/classification_function"
 LAMBDA_FUNCTIONS["extraction_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/extraction_function"
 LAMBDA_FUNCTIONS["assessment_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/assessment_function"
-LAMBDA_FUNCTIONS["pattern2_process_results_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/process-results-function"
+LAMBDA_FUNCTIONS["pattern2_process_results_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/processresults_function"
 LAMBDA_FUNCTIONS["pattern2_hitl_wait_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/hitl-wait-function"
 LAMBDA_FUNCTIONS["pattern2_hitl_status_update_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/hitl-status-update-function"
 LAMBDA_FUNCTIONS["pattern2_hitl_process_function"]="${PROJECT_ROOT}/patterns/pattern-2/src/hitl-process-function"
@@ -137,7 +137,7 @@ build_function() {
 
 # Main execution
 main() {
-    local specific_function=$1
+    local specific_function=${1:-}
 
     # Create directories
     mkdir -p "$BUILD_DIR"
@@ -183,9 +183,9 @@ main() {
         # Sort function names for deterministic build order
         for func_name in $(printf "%s\n" "${!LAMBDA_FUNCTIONS[@]}" | sort); do
             if build_function "$func_name" "${LAMBDA_FUNCTIONS[$func_name]}"; then
-                ((successful_builds++))
+                ((successful_builds++)) || true
             else
-                ((failed_builds++))
+                ((failed_builds++)) || true
             fi
         done
     fi

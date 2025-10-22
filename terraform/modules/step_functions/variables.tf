@@ -8,8 +8,8 @@ variable "state_machine_name" {
   type        = string
 
   validation {
-    condition     = can(regex("^[a-zA-Z0-9-_]+$", var.state_machine_name))
-    error_message = "State machine name must contain only alphanumeric characters, hyphens, and underscores"
+    condition     = can(regex("^[a-zA-Z0-9-_]{1,80}$", var.state_machine_name))
+    error_message = "State machine name must be 1-80 characters and contain only alphanumeric characters, hyphens, and underscores"
   }
 }
 
@@ -17,27 +17,37 @@ variable "state_machine_name" {
 variable "invoke_bda_lambda_arn" {
   description = "ARN of the InvokeBDA Lambda function"
   type        = string
+
+  validation {
+    condition     = can(regex("^arn:(aws|aws-us-gov|aws-cn):lambda:[a-z0-9-]+:[0-9]{12}:function:.+$", var.invoke_bda_lambda_arn))
+    error_message = "Must be a valid Lambda function ARN in format: arn:aws:lambda:region:account-id:function:function-name"
+  }
 }
 
 variable "process_results_lambda_arn" {
   description = "ARN of the ProcessResults Lambda function"
   type        = string
+
+  validation {
+    condition     = can(regex("^arn:(aws|aws-us-gov|aws-cn):lambda:[a-z0-9-]+:[0-9]{12}:function:.+$", var.process_results_lambda_arn))
+    error_message = "Must be a valid Lambda function ARN in format: arn:aws:lambda:region:account-id:function:function-name"
+  }
 }
 
 variable "hitl_wait_function_arn" {
-  description = "ARN of the HITL Wait Lambda function"
+  description = "ARN of the HITL Wait Lambda function (optional - required only when enable_hitl is true)"
   type        = string
   default     = ""
 }
 
 variable "hitl_status_update_function_arn" {
-  description = "ARN of the HITL Status Update Lambda function"
+  description = "ARN of the HITL Status Update Lambda function (optional - required only when enable_hitl is true)"
   type        = string
   default     = ""
 }
 
 variable "summarization_lambda_arn" {
-  description = "ARN of the Summarization Lambda function"
+  description = "ARN of the Summarization Lambda function (optional - enables document summarization when provided)"
   type        = string
   default     = ""
 }

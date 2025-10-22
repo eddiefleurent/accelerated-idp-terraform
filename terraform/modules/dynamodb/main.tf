@@ -40,8 +40,10 @@ resource "aws_dynamodb_table" "this" {
   }
 
   # Stream configuration (optional)
-  stream_enabled   = var.stream_enabled
-  stream_view_type = var.stream_enabled ? var.stream_view_type : null
+  # Only set stream attributes when no replicas are configured
+  # (replicas automatically enable streams for Global Tables v2)
+  stream_enabled   = length(var.replica_regions) == 0 ? var.stream_enabled : null
+  stream_view_type = length(var.replica_regions) == 0 && var.stream_enabled ? var.stream_view_type : null
 
   # Global secondary indexes (optional)
   dynamic "global_secondary_index" {
@@ -73,12 +75,12 @@ resource "aws_dynamodb_table" "this" {
   read_capacity  = var.billing_mode == "PROVISIONED" ? var.read_capacity : null
   write_capacity = var.billing_mode == "PROVISIONED" ? var.write_capacity : null
 
-  # Auto-scaling (only for PROVISIONED billing mode)
+  # Global Tables v2 replicas
   dynamic "replica" {
     for_each = var.replica_regions
     content {
       region_name            = replica.value
-      kms_key_arn            = var.kms_key_arn
+      kms_key_arn            = lookup(var.replica_kms_key_arns, replica.value, null)
       point_in_time_recovery = var.enable_point_in_time_recovery
     }
   }

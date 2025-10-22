@@ -107,6 +107,7 @@ class ConfigurationReader:
             # If no custom config exists, return default
             if not custom_config:
                 logger.info("No Custom configuration found, using Default only")
+                default_config.pop('Configuration', None)
                 return default_config
 
             # Remove the 'Configuration' key as it's not part of the actual config

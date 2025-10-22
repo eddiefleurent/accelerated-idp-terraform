@@ -72,6 +72,7 @@
                     "ExtractionStep": {
                         "Type": "Task",
                         "Resource": "${extraction_function_arn}",
+                        "ResultPath": "$.ExtractionResult",
                         "Retry": [
                             {
                                 "ErrorEquals": [
@@ -97,8 +98,8 @@
                         "Resource": "${assessment_function_arn}",
                         "Parameters": {
                             "execution_arn.$": "$$.Execution.Id",
-                            "document.$": "$.document",
-                            "section_id.$": "$.section_id"
+                            "document.$": "$.ExtractionResult.document",
+                            "section_id.$": "$.ExtractionResult.section_id"
                         },
                         "ResultPath": "$",
                         "Retry": [

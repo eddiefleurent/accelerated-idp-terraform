@@ -2,7 +2,9 @@
 # Terraform Validation Script
 # Runs comprehensive checks on Terraform configuration
 
-set -e
+# Set safe IFS and strict mode
+IFS=$'\n\t'
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'

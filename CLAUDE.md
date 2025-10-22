@@ -73,7 +73,7 @@ sam build
 sam local invoke OCRFunction -e ../../testing/OCRFunction-event.json --env-vars ../../testing/env.json
 ```
 
-### Terraform Deployment (Pattern 1 & Pattern 2)
+### Terraform Deployment (Pattern 2)
 ```bash
 cd terraform
 terraform init
@@ -81,7 +81,7 @@ terraform plan
 terraform apply
 
 # See terraform/README.md for complete deployment guide
-# Note: Uses ZIP packaging (250MB limit), not Docker containers
+# Note: Implements Pattern 2 only; Lambdas use Python 3.12
 ```
 
 ## Project Structure
@@ -120,7 +120,7 @@ Each pattern has its own SAM `template.yaml` defining Lambda functions and Step 
 **`config_library/`** - Configuration templates defining classification prompts, extraction schemas, and few-shot examples
 
 **`terraform/`** - Terraform deployment support (v0.3.20 base)
-  - Pattern 1 (BDA) and Pattern 2 (Textract+Bedrock) fully converted
+  - Pattern 2 (Textract+Bedrock) only; Lambdas use Python 3.12
   - ZIP-based Lambda packaging (250MB limit) vs CloudFormation Docker (10GB limit)
   - IDP CLI and Error Analyzer fully compatible
   - Agentic/Strands extraction NOT available (package size limitation)
@@ -235,7 +235,7 @@ Processing patterns are defined in Step Functions state machines. Lambda functio
 
 ## Coding Standards
 
-- **Python**: PEP 8 via ruff (line length 88, Python 3.9 target)
+- **Python**: PEP 8 via ruff (line length 88, Python 3.12 target)
 - **JavaScript/TypeScript**: ESLint configuration in `src/ui/.eslintrc`
 - **Commit Messages**: Clear, descriptive messages following project conventions
 - **Documentation**: Update relevant docs in `docs/` for functionality changes

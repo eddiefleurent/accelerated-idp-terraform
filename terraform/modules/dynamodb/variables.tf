@@ -62,7 +62,7 @@ variable "kms_key_arn" {
   type        = string
 
   validation {
-    condition     = can(regex("^arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/(mrk-[A-Za-z0-9-]+|[a-f0-9-]+)$", var.kms_key_arn))
+    condition     = can(regex("^arn:aws:kms:[a-z0-9-]+:[0-9]{12}:(key/(mrk-[A-Za-z0-9-]+|[A-Fa-f0-9-]+)|alias/.+)$", var.kms_key_arn))
     error_message = "Must be a valid KMS key ARN"
   }
 }
@@ -118,18 +118,34 @@ variable "read_capacity" {
   description = "Read capacity units (for PROVISIONED mode)"
   type        = number
   default     = 5
+
+  validation {
+    condition     = var.read_capacity >= 1 && var.read_capacity <= 40000
+    error_message = "read_capacity must be between 1 and 40000"
+  }
 }
 
 variable "write_capacity" {
   description = "Write capacity units (for PROVISIONED mode)"
   type        = number
   default     = 5
+
+  validation {
+    condition     = var.write_capacity >= 1 && var.write_capacity <= 40000
+    error_message = "write_capacity must be between 1 and 40000"
+  }
 }
 
 variable "replica_regions" {
   description = "Regions for global table replication"
   type        = list(string)
   default     = []
+}
+
+variable "replica_kms_key_arns" {
+  description = "Map of region names to KMS key ARNs for replica encryption (region -> KMS ARN)"
+  type        = map(string)
+  default     = {}
 }
 
 variable "create_alarms" {

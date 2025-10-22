@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
 """
 Convert regular JSON to DynamoDB JSON format.
 """
 
 import json
 import sys
+from decimal import Decimal
+from typing import Dict, Any, Optional
 
 
 def to_dynamodb_format(obj):
@@ -15,7 +16,7 @@ def to_dynamodb_format(obj):
         return {"BOOL": obj}
     elif isinstance(obj, str):
         return {"S": obj}
-    elif isinstance(obj, (int, float)):
+    elif isinstance(obj, (int, float, Decimal)):
         return {"N": str(obj)}
     elif isinstance(obj, list):
         return {"L": [to_dynamodb_format(item) for item in obj]}
@@ -35,7 +36,13 @@ def main():
 
     # Read regular JSON
     with open(input_file, 'r') as f:
-        data = json.load(f)
+        # Preserve numeric precision for DynamoDB "N" by using Decimal
+        data = json.load(f, parse_float=Decimal, parse_int=Decimal)
+
+    # Validate input structure
+    if not isinstance(data, dict):
+        print("Error: top-level JSON must be an object with key/value pairs.", file=sys.stderr)
+        sys.exit(2)
 
     # Convert to DynamoDB format
     dynamodb_item = {
@@ -43,6 +50,9 @@ def main():
     }
 
     for key, value in data.items():
+        # Reserve the partition key
+        if key == "Configuration":
+            continue
         dynamodb_item[key] = to_dynamodb_format(value)
 
     # Output DynamoDB JSON

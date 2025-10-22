@@ -401,15 +401,15 @@ After successful deployment, Terraform outputs important resource information:
 - IAM role ARNs
 
 **Step Functions:**
-- State machine ARNs for Pattern 1 and Pattern 2
-- Console URLs for monitoring executions
+- State machine ARN and console URL for Pattern 2
+- Monitor document processing executions
 
 **DynamoDB:**
 - Table names for tracking, configuration, metadata
 
 **CloudWatch:**
-- Dashboard names and URLs for Pattern 1 and Pattern 2
-- Log group names
+- Dashboard name and URL for Pattern 2
+- Log group names for all Lambda functions
 
 **Use these outputs to:**
 - Upload documents to input bucket
@@ -446,9 +446,9 @@ cd terraform/testing
 
 # Method 1: Load from config_library YAML (Recommended)
 python3 load_config.py \
-  --config-file ../../config_library/pattern-2/lending-package-sample/config.yaml \
-  --table-name $(cd .. && terraform output -raw configuration_table_name) \
-  --region us-west-2
+  ../../config_library/pattern-2/lending-package-sample/config.yaml \
+  $(cd .. && terraform output -raw configuration_table_name) \
+  us-west-2
 
 # Method 2: Load from custom JSON
 python3 json_to_dynamodb.py \
@@ -572,11 +572,11 @@ model_config:
 EOF
 
 # Load as Custom configuration
-python3 json_to_dynamodb.py \
-  --json-file custom.yaml \
-  --table-name $(terraform output -raw configuration_table_name) \
-  --config-type Custom \
-  --region us-west-2
+python3 load_config.py \
+  custom.yaml \
+  $(terraform output -raw configuration_table_name) \
+  us-west-2 \
+  Custom
 ```
 
 **At runtime, the system merges**: `Default` + `Custom` = Final configuration

@@ -13,6 +13,17 @@ variable "runtime" {
   description = "Lambda runtime"
   type        = string
   default     = "python3.12"
+
+  validation {
+    condition = contains([
+      "python3.9",
+      "python3.10",
+      "python3.11",
+      "python3.12",
+      "python3.13"
+    ], var.runtime)
+    error_message = "Invalid Lambda runtime: must be one of python3.9, python3.10, python3.11, python3.12, or python3.13"
+  }
 }
 
 variable "timeout" {

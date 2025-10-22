@@ -1247,7 +1247,7 @@ module "ocr_function" {
       Action = ["bedrock:InvokeModel"]
       Resource = [
         "arn:${local.partition}:bedrock:*::foundation-model/*",
-        "arn:${local.partition}:bedrock:${var.aws_region}:${local.account_id}:inference-profile/*"
+        "arn:${local.partition}:bedrock:*:${local.account_id}:inference-profile/*"
       ]
     }
   ]
@@ -1333,7 +1333,7 @@ module "classification_function" {
       Action = ["bedrock:InvokeModel"]
       Resource = [
         "arn:${local.partition}:bedrock:*::foundation-model/*",
-        "arn:${local.partition}:bedrock:${var.aws_region}:${local.account_id}:inference-profile/*"
+        "arn:${local.partition}:bedrock:*:${local.account_id}:inference-profile/*"
       ]
     }
   ]
@@ -1419,7 +1419,7 @@ module "extraction_function" {
       Action = ["bedrock:InvokeModel"]
       Resource = [
         "arn:${local.partition}:bedrock:*::foundation-model/*",
-        "arn:${local.partition}:bedrock:${var.aws_region}:${local.account_id}:inference-profile/*"
+        "arn:${local.partition}:bedrock:*:${local.account_id}:inference-profile/*"
       ]
     }
   ]
@@ -1504,7 +1504,7 @@ module "assessment_function" {
         Effect = "Allow"
         Action = ["bedrock:InvokeModel"]
         Resource = [
-          "arn:${local.partition}:bedrock:*::foundation-model/*",
+          "arn:${local.partition}:bedrock:${var.aws_region}::foundation-model/*",
           "arn:${local.partition}:bedrock:${var.aws_region}:${local.account_id}:inference-profile/*"
         ]
       },
@@ -1918,7 +1918,7 @@ module "summarization_function" {
         Effect = "Allow"
         Action = ["bedrock:InvokeModel"]
         Resource = [
-          "arn:${local.partition}:bedrock:*::foundation-model/*",
+          "arn:${local.partition}:bedrock:${var.aws_region}::foundation-model/*",
           "arn:${local.partition}:bedrock:${var.aws_region}:${local.account_id}:inference-profile/*"
         ]
       },

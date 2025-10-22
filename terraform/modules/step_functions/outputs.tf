@@ -47,7 +47,7 @@ output "console_url" {
   description = "AWS Console URL for the state machine"
   value = format(
     "https://console.%s/states/home?region=%s#/statemachines/view/%s",
-    split(":", aws_sfn_state_machine.this.arn)[1] == "aws-us-gov" ? "aws-us-gov.amazon.com" : (
+    split(":", aws_sfn_state_machine.this.arn)[1] == "aws-us-gov" ? "amazonaws-us-gov.com" : (
       split(":", aws_sfn_state_machine.this.arn)[1] == "aws-cn" ? "amazonaws.cn" : "aws.amazon.com"
     ),
     split(":", aws_sfn_state_machine.this.arn)[3],

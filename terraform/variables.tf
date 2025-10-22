@@ -180,16 +180,31 @@ variable "permissions_boundary_arn" {
 variable "input_bucket_name" {
   description = "Name of the input S3 bucket (will be created)"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.input_bucket_name)) && !can(regex("\\.\\.|-\\.", var.input_bucket_name))
+    error_message = "Bucket name must be 3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters"
+  }
 }
 
 variable "output_bucket_name" {
   description = "Name of the output S3 bucket (will be created)"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.output_bucket_name)) && !can(regex("\\.\\.|-\\.", var.output_bucket_name))
+    error_message = "Bucket name must be 3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters"
+  }
 }
 
 variable "working_bucket_name" {
   description = "Name of the working S3 bucket (will be created)"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.working_bucket_name)) && !can(regex("\\.\\.|-\\.", var.working_bucket_name))
+    error_message = "Bucket name must be 3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters"
+  }
 }
 
 # Step Functions Configuration
@@ -276,6 +291,11 @@ variable "sagemaker_a2i_review_portal_url" {
 variable "discovery_bucket_name" {
   description = "Name of the discovery S3 bucket (will be created)"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.discovery_bucket_name)) && !can(regex("\\.\\.|-\\.", var.discovery_bucket_name))
+    error_message = "Bucket name must be 3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters"
+  }
 }
 
 # Tags
@@ -326,6 +346,11 @@ variable "reporting_bucket_name" {
   description = "Name of the reporting S3 bucket (optional, for analytics data)"
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.reporting_bucket_name == "" || (can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.reporting_bucket_name)) && !can(regex("\\.\\.|-\\.", var.reporting_bucket_name)))
+    error_message = "Bucket name must be empty or valid S3 bucket name (3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters)"
+  }
 }
 
 variable "save_reporting_function_name" {
@@ -338,6 +363,11 @@ variable "save_reporting_function_name" {
 variable "artifact_bucket_name" {
   description = "Name of the S3 bucket containing deployment artifacts (must already exist)"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.artifact_bucket_name)) && !can(regex("\\.\\.|-\\.", var.artifact_bucket_name))
+    error_message = "Bucket name must be 3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters"
+  }
 }
 
 variable "artifact_prefix" {
@@ -351,6 +381,11 @@ variable "custom_config_bucket_name" {
   description = "Name of the S3 bucket containing custom configuration files (optional)"
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.custom_config_bucket_name == "" || (can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.custom_config_bucket_name)) && !can(regex("\\.\\.|-\\.", var.custom_config_bucket_name)))
+    error_message = "Bucket name must be empty or valid S3 bucket name (3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters)"
+  }
 }
 
 # Evaluation Configuration
@@ -358,6 +393,11 @@ variable "evaluation_baseline_bucket_name" {
   description = "Name of existing S3 bucket for evaluation baseline data. Leave empty to create a new bucket."
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.evaluation_baseline_bucket_name == "" || (can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.evaluation_baseline_bucket_name)) && !can(regex("\\.\\.|-\\.", var.evaluation_baseline_bucket_name)))
+    error_message = "Bucket name must be empty or valid S3 bucket name (3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters)"
+  }
 }
 
 variable "evaluation_auto_enabled" {
@@ -370,6 +410,11 @@ variable "evaluation_auto_enabled" {
 variable "webui_bucket_name" {
   description = "Name of the WebUI/assets S3 bucket"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.webui_bucket_name)) && !can(regex("\\.\\.|-\\.", var.webui_bucket_name))
+    error_message = "Bucket name must be 3-63 characters, start/end with alphanumeric, contain only lowercase letters, numbers, hyphens, and periods, and not have consecutive special characters"
+  }
 }
 
 # Notifications
