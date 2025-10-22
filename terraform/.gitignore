@@ -29,8 +29,6 @@ terraform.rc
 
 # Lambda deployment packages are handled by root .gitignore
 
-# .terraform.lock.hcl is handled by root .gitignore
-
 # Ignore backup files
 *.backup
 *.bak
@@ -38,8 +36,6 @@ terraform.rc
 # Local environment files are handled by root .gitignore
 
 # Additional patterns not covered by root .gitignore
-# Terraform lock files in subdirectories
-modules/*/.terraform.lock.hcl
 
 # Lambda layers directory
 lambda_layers/
