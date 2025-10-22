@@ -29,7 +29,6 @@ terraform/terraform_destroy*.log
 terraform/*.tfstate
 terraform/*.tfstate.backup
 terraform/.terraform/
-terraform/.terraform.lock.hcl
 terraform/.terraform.tfstate.lock.info
 
 # Lambda package directories
