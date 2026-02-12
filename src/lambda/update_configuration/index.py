@@ -7,7 +7,6 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 from typing import Dict, Any, Union
-import cfnresponse
 import yaml
 from decimal import Decimal
 
@@ -84,7 +83,7 @@ def update_configuration(configuration_type: str, data: Dict[str, Any]) -> None:
     try:
         # Convert any float values to Decimal for DynamoDB compatibility
         converted_data = convert_floats_to_decimal(data)
-        
+
         table.put_item(
             Item={
                 'Configuration': configuration_type,
@@ -115,73 +114,120 @@ def generate_physical_id(stack_id: str, logical_id: str) -> str:
     """
     return f"{stack_id}/{logical_id}/configuration"
 
-def handler(event: Dict[str, Any], context: Any) -> None:
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
-    Handles CloudFormation Custom Resource events for configuration management
+    Handles configuration management for both CloudFormation and Terraform deployments.
+    For Terraform, simply invoke with ResourceProperties directly.
     """
     logger.info(f"Received event: {json.dumps(event)}")
-    
+
     try:
-        request_type = event['RequestType']
-        properties = event['ResourceProperties']
-        stack_id = event['StackId']
-        logical_id = event['LogicalResourceId']
-        
-        # Generate physical ID
-        physical_id = generate_physical_id(stack_id, logical_id)
-        
-        # Remove ServiceToken from properties as it's not needed in DynamoDB
+        # Support both CloudFormation and direct Terraform invocation
+        request_type = event.get('RequestType', 'Create')
+
+        # Get properties from ResourceProperties or use empty dict
+        # Create a copy to avoid mutating the original event
+        resource_properties = event.get('ResourceProperties')
+        if resource_properties is None:
+            properties = {}
+        else:
+            properties = dict(resource_properties)
+
+        # Remove ServiceToken from the copied properties (not needed in DynamoDB)
         properties.pop('ServiceToken', None)
-        
+
         if request_type in ['Create', 'Update']:
             # Update Schema configuration
             if 'Schema' in properties:
                 resolved_schema = resolve_content(properties['Schema'])
-                # Convert any float values to Decimal for DynamoDB compatibility
                 update_configuration('Schema', {'Schema': resolved_schema})
-            
+                logger.info("Updated Schema configuration")
+
             # Update Default configuration
             if 'Default' in properties:
                 resolved_default = resolve_content(properties['Default'])
-                
+
                 # Apply custom model ARNs if provided
                 if isinstance(resolved_default, dict):
                     # Replace classification model if CustomClassificationModelARN is provided and not empty
-                    if 'CustomClassificationModelARN' in properties and properties['CustomClassificationModelARN'].strip():
+                    custom_classification_arn = properties.get('CustomClassificationModelARN')
+                    if custom_classification_arn and isinstance(custom_classification_arn, str) and custom_classification_arn.strip():
                         if 'classification' in resolved_default:
-                            resolved_default['classification']['model'] = properties['CustomClassificationModelARN']
-                            logger.info(f"Updated classification model to: {properties['CustomClassificationModelARN']}")
-                    
+                            resolved_default['classification']['model'] = custom_classification_arn
+                            logger.info(f"Updated classification model to: {custom_classification_arn}")
+
                     # Replace extraction model if CustomExtractionModelARN is provided and not empty
-                    if 'CustomExtractionModelARN' in properties and properties['CustomExtractionModelARN'].strip():
+                    custom_extraction_arn = properties.get('CustomExtractionModelARN')
+                    if custom_extraction_arn and isinstance(custom_extraction_arn, str) and custom_extraction_arn.strip():
                         if 'extraction' in resolved_default:
-                            resolved_default['extraction']['model'] = properties['CustomExtractionModelARN']
-                            logger.info(f"Updated extraction model to: {properties['CustomExtractionModelARN']}")
-                
+                            resolved_default['extraction']['model'] = custom_extraction_arn
+                            logger.info(f"Updated extraction model to: {custom_extraction_arn}")
+
                 update_configuration('Default', resolved_default)
-            
+                logger.info("Updated Default configuration")
+
             # Update Custom configuration if provided and not empty
-            if 'Custom' in properties and properties['Custom'].get('Info') != 'Custom inference settings':
-                resolved_custom = resolve_content(properties['Custom'])
-                update_configuration('Custom', resolved_custom)
-            
-            cfnresponse.send(event, context, cfnresponse.SUCCESS, {
-                'Message': f'Successfully {request_type.lower()}d configurations'
-            }, physical_id)
-            
+            if 'Custom' in properties:
+                custom_properties = properties.get('Custom')
+                if isinstance(custom_properties, dict) and custom_properties.get('Info') != 'Custom inference settings':
+                    resolved_custom = resolve_content(custom_properties)
+                    update_configuration('Custom', resolved_custom)
+                    logger.info("Updated Custom configuration")
+                elif not isinstance(custom_properties, dict):
+                    logger.warning(f"Custom properties is not a dictionary (type: {type(custom_properties)}), skipping Custom configuration update")
+
+            response_data = {
+                'Message': f'Successfully {request_type.lower()}d configurations',
+                'Status': 'SUCCESS'
+            }
+
+            # For CloudFormation compatibility (if cfnresponse is available)
+            if 'StackId' in event:
+                try:
+                    import cfnresponse
+                    physical_id = generate_physical_id(event['StackId'], event['LogicalResourceId'])
+                    cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data, physical_id)
+                except ImportError:
+                    logger.warning("cfnresponse not available, returning direct response")
+
+            return response_data
+
         elif request_type == 'Delete':
-            # Do nothing on delete - preserve any existing configuration otherwise 
-            # data is lost during custom resource replacement (cleanup step), e.g. 
-            # if nested stack name or resource name is changed
-            logger.info("Delete - no op...")            
-            cfnresponse.send(event, context, cfnresponse.SUCCESS, {
-                'Message': 'Sucess (delete = no-op)'
-            }, physical_id)
-            
+            # Do nothing on delete - preserve configuration data
+            logger.info("Delete request - no operation performed")
+
+            response_data = {
+                'Message': 'Success (delete = no-op)',
+                'Status': 'SUCCESS'
+            }
+
+            # For CloudFormation compatibility
+            if 'StackId' in event:
+                try:
+                    import cfnresponse
+                    physical_id = generate_physical_id(event['StackId'], event['LogicalResourceId'])
+                    cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data, physical_id)
+                except ImportError:
+                    logger.warning("cfnresponse not available, returning direct response")
+
+            return response_data
+
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
-        # Still need to send physical ID even on failure
-        physical_id = generate_physical_id(event['StackId'], event['LogicalResourceId'])
-        cfnresponse.send(event, context, cfnresponse.FAILED, {
-            'Error': str(e)
-        }, physical_id, reason=str(e))
+        error_response = {
+            'Error': str(e),
+            'Status': 'FAILED'
+        }
+
+        # For CloudFormation compatibility
+        if 'StackId' in event:
+            try:
+                import cfnresponse
+                physical_id = generate_physical_id(event['StackId'], event['LogicalResourceId'])
+                cfnresponse.send(event, context, cfnresponse.FAILED, error_response, physical_id, reason=str(e))
+                return error_response
+            except ImportError:
+                logger.warning("cfnresponse not available, returning direct error response")
+                return error_response
+        else:
+            raise

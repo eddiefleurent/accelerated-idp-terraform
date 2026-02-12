@@ -1,0 +1,51 @@
+# Terraform gitignore
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files are handled by root .gitignore
+
+# Crash log files
+crash.log
+crash.*.log
+
+# .tfvars files are handled by root .gitignore
+
+# Ignore override files as they are usually used to override resources locally
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include override files you do wish to add to version control using negated pattern
+# !example_override.tf
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+*tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Lambda deployment packages are handled by root .gitignore
+
+# Ignore backup files
+*.backup
+*.bak
+
+# Local environment files are handled by root .gitignore
+
+# Additional patterns not covered by root .gitignore
+
+# Lambda layers directory
+lambda_layers/
+
+# Test variable files
+test_variable.tf
+
+# Terraform state backup files with timestamps
+terraform.tfstate.*.backup.*
+
+# Terraform operation logs
+terraform_*.log
+*.log

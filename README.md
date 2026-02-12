@@ -74,6 +74,27 @@ To quickly deploy the GenAI-IDP solution in your AWS account:
 3. When the stack deploys for the first time, you'll receive an email with a temporary password to access the web UI
 4. Use this temporary password for your first login to set up a permanent password
 
+### Terraform Deployment (Alternative)
+
+For infrastructure-as-code workflows, deploy Pattern 2 using Terraform:
+
+```bash
+cd terraform
+./deploy.sh
+```
+
+After deployment, load configuration into DynamoDB:
+
+```bash
+cd terraform/testing
+python3 load_config.py \
+  --config-file ../../config_library/pattern-2/lending-package-sample/config.yaml \
+  --table-name $(cd .. && terraform output -raw configuration_table_name) \
+  --region us-west-2
+```
+
+See [terraform/README.md](./terraform/README.md) for complete Terraform documentation, testing instructions, and troubleshooting.
+
 ### Processing Your First Document
 
 After deployment, choose the processing method that fits your use case:

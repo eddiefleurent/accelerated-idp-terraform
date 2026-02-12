@@ -64,6 +64,7 @@ classification = [
 # Extraction module dependencies
 extraction = [
   "Pillow==11.2.1", # For image handling
+  "pydantic>=2.0.0", # For schema validation
 ]
 
 # Assessment module dependencies
@@ -136,6 +137,7 @@ all = [
   "pyarrow==20.0.0",
   "openpyxl==3.1.5",
   "python-docx==1.2.0",
+  "pydantic>=2.0.0,<3.0.0",
   "strands-agents>=1.0.0; python_version>='3.10'",
   "strands-agents-tools>=0.2.2; python_version>='3.10'",
   "bedrock-agentcore>=0.1.1; python_version>='3.10'",
